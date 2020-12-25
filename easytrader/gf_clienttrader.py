@@ -69,7 +69,7 @@ class GFClientTrader(clienttrader.BaseLoginClientTrader):
                 path=self._run_exe_path(exe_path), timeout=10
             )
         self._main = self._app.window(title_re="""{title}.*""".format(title=self._config.TITLE))
-        self.close_pop_dialog()
+        self.close_popus()
 
     def _handle_verify_code(self):
         control = self._app.top_window().window(control_id=0x5db)

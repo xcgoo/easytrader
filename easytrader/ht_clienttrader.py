@@ -5,6 +5,7 @@ import pywinauto.clipboard
 
 from easytrader import grid_strategies
 from . import clienttrader
+import time
 
 
 class HTClientTrader(clienttrader.BaseLoginClientTrader):
@@ -28,34 +29,45 @@ class HTClientTrader(clienttrader.BaseLoginClientTrader):
             raise ValueError("华泰必须设置通讯密码")
 
         try:
-            self._app = pywinauto.Application().connect(
-                path=self._run_exe_path(exe_path), timeout=1
-            )
+            self._app = pywinauto.Application().connect(path=self._run_exe_path(exe_path), timeout=1)
         # pylint: disable=broad-except
         except Exception:
             self._app = pywinauto.Application().start(exe_path)
 
-            # wait login window ready
+            dlg_login = self._app.window(title_re=u"用户登录", class_name="#32770")
+            dlg_login.wait("ready", 100)
+            # 帐号
+            edit_account = dlg_login['Edit1']
+            # 密码
+            edit_password = dlg_login['Edit2']
+            # 通讯密码
+            edit_commpsw = dlg_login['Edit3']
+
+            # 确定
+            while dlg_login.exists():
+                try:
+                    edit_account.set_text(user)
+                    edit_password.set_text(password)
+                    edit_commpsw.set_text(comm_password)
+
+                    bt_confirm = dlg_login.child_window(title_re=u'确定', class_name="Button")
+                    bt_confirm.wait("ready", 2)
+                    bt_confirm.click()
+                except:
+                    break
+                time.sleep(0.5)
+
             while True:
                 try:
-                    self._app.top_window().Edit1.wait("ready")
+                    self._main = self._app.window(title_re=self._config.TITLE)
+                    print(self._main)
+                    self._main.wait("ready", timeout=100)
                     break
-                except RuntimeError:
-                    pass
-            self._app.top_window().Edit1.set_focus()
-            self._app.top_window().Edit1.type_keys(user)
-            self._app.top_window().Edit2.type_keys(password)
+                except:
+                    time.sleep(0.5)
 
-            self._app.top_window().Edit3.set_edit_text(comm_password)
-
-            self._app.top_window().button0.click()
-
-            self._app = pywinauto.Application().connect(
-                path=self._run_exe_path(exe_path), timeout=10
-            )
-        self._main = self._app.window(title="网上股票交易系统5.0")
-        self._main.wait ( "exists enabled visible ready" , timeout=100 )
-        self._close_prompt_windows ( )
+            # 关闭弹出窗口
+            self.close_pop_dialog()
 
     @property
     def balance(self):

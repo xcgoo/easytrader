@@ -13,6 +13,10 @@ import hashlib, binascii
 import easyutils
 from pywinauto import findwindows, timings
 
+from pathlib import Path
+import pandas as pd
+from datetime import date, datetime
+
 from easytrader import grid_strategies, pop_dialog_handler, refresh_strategies
 from easytrader.config import client
 from easytrader.grid_strategies import IGridStrategy
@@ -24,6 +28,7 @@ from easytrader.utils.perf import perf_clock
 if not sys.platform.startswith("darwin"):
     import pywinauto
     import pywinauto.clipboard
+
 
 class IClientTrader(abc.ABC):
     @property
@@ -124,7 +129,7 @@ class ClientTrader(IClientTrader):
 
     @property
     def balance(self):
-        self._switch_left_menus(["查询[F4]", "资金股票"])
+        self._switch_left_menus(self._config.BALANCE_MENU_PATH)
 
         return self._get_balance_from_statics()
 
@@ -349,8 +354,8 @@ class ClientTrader(IClientTrader):
     def _click_grid_by_row(self, row):
         x = self._config.COMMON_GRID_LEFT_MARGIN
         y = (
-            self._config.COMMON_GRID_FIRST_ROW_HEIGHT
-            + self._config.COMMON_GRID_ROW_HEIGHT * row
+                self._config.COMMON_GRID_FIRST_ROW_HEIGHT
+                + self._config.COMMON_GRID_ROW_HEIGHT * row
         )
         self._app.top_window().child_window(
             control_id=self._config.COMMON_GRID_CONTROL_ID,
@@ -362,12 +367,12 @@ class ClientTrader(IClientTrader):
         self.wait(0.5)  # wait dialog display
         try:
             return (
-                self._main.wrapper_object() != self._app.top_window().wrapper_object()
+                    self._main.wrapper_object() != self._app.top_window().wrapper_object()
             )
         except (
-            findwindows.ElementNotFoundError,
-            timings.TimeoutError,
-            RuntimeError,
+                findwindows.ElementNotFoundError,
+                timings.TimeoutError,
+                RuntimeError,
         ) as ex:
             logger.exception("check pop dialog timeout")
             return False
@@ -406,6 +411,22 @@ class ClientTrader(IClientTrader):
                 self.wait(0.2)
         self.wait(1)
 
+    def close_popups(self, wait_not_time: float = 1):
+        time.sleep(0.5)
+        logger.info(f"close all the popup windows...")
+        while True:
+            pop_handle = self._main.popup_window()
+            try:
+                popup_win = self._main.child_window(handle=pop_handle)
+                wintext = popup_win.window_text()
+                popup_win.close()
+                logger.info(f"closed:{pop_handle}, window title:{wintext}")
+                popup_win.wait_not("exists", wait_not_time)
+            except:
+                logger.info("closed all the popup windows!")
+                break
+            time.sleep(0.5)
+
     def close_pormpt_window_no_wait(self):
         for window in self._app.windows(class_name="#32770"):
             if window.window_text() != self._config.TITLE:
@@ -442,8 +463,8 @@ class ClientTrader(IClientTrader):
     def _get_pop_dialog_title(self):
         return (
             self._app.top_window()
-            .child_window(control_id=self._config.POP_DIALOD_TITLE_CONTROL_ID)
-            .window_text()
+                .child_window(control_id=self._config.POP_DIALOD_TITLE_CONTROL_ID)
+                .window_text()
         )
 
     def _set_trade_params(self, security, price, amount):
@@ -550,8 +571,8 @@ class ClientTrader(IClientTrader):
     def _cancel_entrust_by_double_click(self, row):
         x = self._config.CANCEL_ENTRUST_GRID_LEFT_MARGIN
         y = (
-            self._config.CANCEL_ENTRUST_GRID_FIRST_ROW_HEIGHT
-            + self._config.CANCEL_ENTRUST_GRID_ROW_HEIGHT * row
+                self._config.CANCEL_ENTRUST_GRID_FIRST_ROW_HEIGHT
+                + self._config.CANCEL_ENTRUST_GRID_ROW_HEIGHT * row
         )
         self._app.top_window().child_window(
             control_id=self._config.COMMON_GRID_CONTROL_ID,
@@ -585,13 +606,13 @@ class BaseLoginClientTrader(ClientTrader):
         pass
 
     def prepare(
-        self,
-        config_path=None,
-        user=None,
-        password=None,
-        exe_path=None,
-        comm_password=None,
-        **kwargs
+            self,
+            config_path=None,
+            user=None,
+            password=None,
+            exe_path=None,
+            comm_password=None,
+            **kwargs
     ):
         """
         登陆客户端
@@ -616,3 +637,80 @@ class BaseLoginClientTrader(ClientTrader):
             **kwargs
         )
         self._init_toolbar()
+
+    def record_position(self, position_record_path):
+        time.sleep(0.5)
+        posi_list = self.position
+        if len(posi_list) > 0:
+            df_position_td_ori = pd.DataFrame.from_dict(posi_list, orient='columns')
+            df_position_td_ori.set_index("证券代码", inplace=True)
+            df_position_td_ori[u"记录日期"] = date.today()
+            df_position_td = df_position_td_ori.copy()
+            df_position_td = df_position_td[self._config.POSITION_COMPARE_ITEMS]
+            dict_position_td = df_position_td.to_dict(orient="index")
+        else:
+            df_position_td = pd.DataFrame([])
+            dict_position_td = {}
+        if position_record_path.exists():
+            df_position_his = pd.read_csv(position_record_path, dtype={"证券代码": str}, parse_dates=["记录日期"])
+            if df_position_td.shape[0] > 0:
+                dtm_last_record = max(df_position_his["记录日期"])
+                df_position_his = df_position_his[df_position_his['记录日期'] == dtm_last_record]
+                df_position_his.set_index("证券代码", inplace=True)
+                df_position_his = df_position_his[self._config.POSITION_COMPARE_ITEMS]
+                dict_position_his = df_position_his.to_dict(orient="index")
+                if dict_position_td != dict_position_his:
+                    df_position_td_ori.to_csv(position_record_path, header=False, mode="a", index=True, float_format="%.3f")
+        else:
+            if df_position_td.shape[0] > 0:
+                df_position_td_ori.to_csv(position_record_path, header=True, index=True, float_format="%.3f")
+
+    def record_trades(self, trade_record_path):
+        time.sleep(0.5)
+        trades_list = self.today_trades
+        if len(trades_list) > 0:
+            df_trade_td_ori = pd.DataFrame.from_dict(trades_list, orient='columns')
+            df_trade_td_ori.set_index("证券代码", inplace=True)
+            df_trade_td_ori[u"记录日期"] = date.today()
+            df_trade_td = df_trade_td_ori.copy()
+            df_trade_td = df_trade_td[["成交数量", "成交编号", "合同编号"]]
+            dict_trade_td = df_trade_td.to_dict(orient="index")
+        else:
+            df_trade_td = pd.DataFrame([])
+            dict_trade_td = {}
+
+        if trade_record_path.exists():
+            df_trade_his = pd.read_csv(trade_record_path, dtype={"证券代码": str}, parse_dates=["记录日期"])
+            if df_trade_td.shape[0] > 0:
+                dtm_last_record = max(df_trade_his["记录日期"])
+                df_trade_his = df_trade_his[df_trade_his['记录日期'] == dtm_last_record]
+                df_trade_his.set_index("证券代码", inplace=True)
+                df_trade_his = df_trade_his[["成交数量", "成交编号", "合同编号"]]
+                dict_trade_his = df_trade_his.to_dict(orient="index")
+                if dict_trade_td != dict_trade_his:
+                    df_trade_td_ori.to_csv(trade_record_path, header=False, mode="a", index=True, float_format="%.3f")
+        else:
+            if df_trade_td.shape[0] > 0:
+                df_trade_td["记录日期"] = date.today()
+                df_trade_td_ori.to_csv(trade_record_path, header=True, index=True, float_format="%.3f")
+
+    def record_balance(self, balance_record_path):
+        time.sleep(0.5)
+        dict_balance_td = self.balance
+        ser_balance_td = pd.Series(dict_balance_td)
+        ser_balance_td[u"记录时间"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        index_td = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        if balance_record_path.exists():
+            df_balance_his = pd.read_csv(balance_record_path, dtype={"证券代码": str}, parse_dates=["日期", "记录时间"],
+                                         index_col=[0])
+            df_balance_his.drop_duplicates(subset=["总资产"], keep="last", ignore_index=False, inplace=True)
+            df_balance_his.loc[index_td, :] = ser_balance_td
+        else:
+            ser_balance_td["日期"] = index_td
+            df_balance_his = ser_balance_td.to_frame().T
+            df_balance_his.set_index("日期", inplace=True)
+        df_balance_his.to_csv(balance_record_path)
+
+    def logout(self):
+        self.exit()
+        self._main.wait_not("exists", 60)

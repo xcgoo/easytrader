@@ -14,6 +14,8 @@ def create(broker):
         return WK
     if broker == "htzq":
         return HTZQ
+    if broker == "zx":
+        return ZX
     raise NotImplementedError
 
 
@@ -78,6 +80,8 @@ class CommonConfig:
     AUTO_IPO_MENU_PATH = ["新股申购", "批量新股申购"]
     AUTO_IPO_NUMBER = '申购数量'
 
+    POSITION_COMPARE_ITEMS = ["股票余额", "可用余额", "冻结数量", "成本价"]
+
 
 class YH(CommonConfig):
     DEFAULT_EXE_PATH = r"C:\双子星-中国银河证券\Binarystar.exe"
@@ -104,10 +108,11 @@ class HT(CommonConfig):
 
     BALANCE_CONTROL_ID_GROUP = {
         "资金余额": 1012,
-        "冻结资金": 1013,
+        "冻结金额": 1013,
         "可用金额": 1016,
         "可取金额": 1017,
         "股票市值": 1014,
+        "现金资产": 1483,
         "总资产": 1015,
     }
 
@@ -124,6 +129,8 @@ class HT(CommonConfig):
     }
 
     AUTO_IPO_MENU_PATH = ["新股申购", "批量新股申购"]
+    AUTO_IPO_NUMBER = '可申购数量'
+
 
 
 class GJ(CommonConfig):
@@ -176,3 +183,32 @@ class HTZQ(CommonConfig):
     }
 
     AUTO_IPO_NUMBER = '可申购数量'
+
+class ZX(CommonConfig):
+    DEFAULT_EXE_PATH = r"C:\Program Files (x86)\中信证券(山东)至胜全能版网上交易\xiadan.exe"
+
+    GRID_DTYPE = {
+        "操作日期": str,
+        "委托编号": str,
+        "申请编号": str,
+        "合同编号": str,
+        "证券代码": str,
+        "股东代码": str,
+        "资金帐号": str,
+        "资金帐户": str,
+        "发生日期": str,
+    }
+
+    BALANCE_CONTROL_ID_GROUP = {
+        "资金余额": 1012,
+        "可用金额": 1016,
+        "可取金额": 1017,
+        "总资产": 1015,
+        "股票市值": 1014,
+        "冻结金额": 1013
+    }
+
+    TITLE = "中信证券"
+    BALANCE_MENU_PATH = ["查询[F4]", "资金股份"]
+    AUTO_IPO_MENU_PATH = ["新股申购", "新股批量申购"]
+    POSITION_COMPARE_ITEMS = ["参考持股", "可用股份", "成本价", "冻结数量"]

@@ -2,6 +2,7 @@ import re
 
 import requests
 from PIL import Image
+from aip import AipOcr
 
 from easytrader import exceptions
 
@@ -22,8 +23,19 @@ def captcha_recognize(img_path):
     out = im.point(table, "1")
     # 2. recognize with tesseract
     num = pytesseract.image_to_string(out)
-    return num
+    return "".join(re.findall("\d+", num))
 
+def aip_recognize(img_path):
+    APP_ID = '16149264'
+    API_KEY = 'yxYg9r4OuAs4fYvfcl8tqCYd'
+    SECRET_KEY = 'yWg3KMds2muFsWs7MBSSFcgMQl8Wng4s'
+
+    client = AipOcr(APP_ID, API_KEY, SECRET_KEY)
+    with open(img_path, 'rb') as f:
+        image = f.read()                      # image就是这张图片的二进制内容
+        text = client.basicAccurate(image)    # 调用百度的接口帮我们识别图片的内容
+        result = text['words_result'][0]['words']
+        return result
 
 def recognize_verify_code(image_path, broker="ht"):
     """识别验证码，返回识别后的字符串，使用 tesseract 实现
