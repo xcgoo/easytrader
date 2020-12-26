@@ -25,6 +25,9 @@ from easytrader.refresh_strategies import IRefreshStrategy
 from easytrader.utils.misc import file2dict
 from easytrader.utils.perf import perf_clock
 
+from pywinauto.timings import Timings
+Timings.slow()
+
 if not sys.platform.startswith("darwin"):
     import pywinauto
     import pywinauto.clipboard
@@ -661,9 +664,11 @@ class BaseLoginClientTrader(ClientTrader):
                 dict_position_his = df_position_his.to_dict(orient="index")
                 if dict_position_td != dict_position_his:
                     df_position_td_ori.to_csv(position_record_path, header=False, mode="a", index=True, float_format="%.3f")
+                    logger.info("append the positions to the position record file.")
         else:
             if df_position_td.shape[0] > 0:
                 df_position_td_ori.to_csv(position_record_path, header=True, index=True, float_format="%.3f")
+                logger.info("newly redorded the position to the position record file.")
 
     def record_trades(self, trade_record_path):
         time.sleep(0.5)
@@ -689,10 +694,12 @@ class BaseLoginClientTrader(ClientTrader):
                 dict_trade_his = df_trade_his.to_dict(orient="index")
                 if dict_trade_td != dict_trade_his:
                     df_trade_td_ori.to_csv(trade_record_path, header=False, mode="a", index=True, float_format="%.3f")
+                    logger.info("append the trades to the trades record file.")
         else:
             if df_trade_td.shape[0] > 0:
                 df_trade_td["记录日期"] = date.today()
                 df_trade_td_ori.to_csv(trade_record_path, header=True, index=True, float_format="%.3f")
+                logger.info("newly record the trades to the trades record file.")
 
     def record_balance(self, balance_record_path):
         time.sleep(0.5)
@@ -710,6 +717,7 @@ class BaseLoginClientTrader(ClientTrader):
             df_balance_his = ser_balance_td.to_frame().T
             df_balance_his.set_index("日期", inplace=True)
         df_balance_his.to_csv(balance_record_path)
+        logger.info("updated today's balance to the balance record file.")
 
     def logout(self):
         self.exit()
