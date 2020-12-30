@@ -210,5 +210,4 @@ class ZX(CommonConfig):
 
     TITLE = "中信证券"
     BALANCE_MENU_PATH = ["查询[F4]", "资金股份"]
-    AUTO_IPO_MENU_PATH = ["新股申购", "新股批量申购"]
     POSITION_COMPARE_ITEMS = ["参考持股", "可用股份", "成本价", "冻结数量"]

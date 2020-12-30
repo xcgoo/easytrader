@@ -342,7 +342,12 @@ class ClientTrader(IClientTrader):
         if len(stock_list) == len(invalid_list_idx):
             return {"message": "没有发现可以申购的新股"}
 
-        self._click(self._config.AUTO_IPO_SELECT_ALL_BUTTON_CONTROL_ID)
+        # self._click(self._config.AUTO_IPO_SELECT_ALL_BUTTON_CONTROL_ID)
+        bt_select_all = self._main.child_window(class_name="Button",
+                                                control_id=self._config.AUTO_IPO_SELECT_ALL_BUTTON_CONTROL_ID,
+                                                title="全部选中")
+        if bt_select_all.exsits():
+            bt_select_all.click()
         self.wait(0.1)
 
         for row in invalid_list_idx:
@@ -413,22 +418,6 @@ class ClientTrader(IClientTrader):
                 window.close()
                 self.wait(0.2)
         self.wait(1)
-
-    def close_popups(self, wait_not_time: float = 1):
-        time.sleep(0.5)
-        logger.info(f"close all the popup windows...")
-        while True:
-            pop_handle = self._main.popup_window()
-            try:
-                popup_win = self._main.child_window(handle=pop_handle)
-                wintext = popup_win.window_text()
-                popup_win.close()
-                logger.info(f"closed:{pop_handle}, window title:{wintext}")
-                popup_win.wait_not("exists", wait_not_time)
-            except:
-                logger.info("closed all the popup windows!")
-                break
-            time.sleep(0.5)
 
     def close_pormpt_window_no_wait(self):
         for window in self._app.windows(class_name="#32770"):
