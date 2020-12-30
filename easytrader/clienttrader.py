@@ -346,7 +346,7 @@ class ClientTrader(IClientTrader):
         bt_select_all = self._main.child_window(class_name="Button",
                                                 control_id=self._config.AUTO_IPO_SELECT_ALL_BUTTON_CONTROL_ID,
                                                 title="全部选中")
-        if bt_select_all.exsits():
+        if bt_select_all.exists():
             bt_select_all.click()
         self.wait(0.1)
 
