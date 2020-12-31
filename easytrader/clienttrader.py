@@ -343,11 +343,13 @@ class ClientTrader(IClientTrader):
             return {"message": "没有发现可以申购的新股"}
 
         # self._click(self._config.AUTO_IPO_SELECT_ALL_BUTTON_CONTROL_ID)
-        bt_select_all = self._main.child_window(class_name="Button",
-                                                control_id=self._config.AUTO_IPO_SELECT_ALL_BUTTON_CONTROL_ID,
-                                                title="全部选中")
-        if bt_select_all.exists():
-            bt_select_all.click()
+        try:
+            bt_select_all = self._main.child_window(class_name="Button",
+                                                    control_id=self._config.AUTO_IPO_SELECT_ALL_BUTTON_CONTROL_ID,
+                                                    title="全部选中")
+            bt_select_all.exists()
+        except:
+            pass
         self.wait(0.1)
 
         for row in invalid_list_idx:
