@@ -16,6 +16,8 @@ def create(broker):
         return HTZQ
     if broker == "zx":
         return ZX
+    if broker == "cj":
+        return CJ
     raise NotImplementedError
 
 
@@ -211,3 +213,17 @@ class ZX(CommonConfig):
     TITLE = "中信证券"
     BALANCE_MENU_PATH = ["查询[F4]", "资金股份"]
     POSITION_COMPARE_ITEMS = ["参考持股", "可用股份", "成本价", "冻结数量"]
+
+class CJ(CommonConfig):
+    DEFAULT_EXE_PATH = r"C:\Programs\金长江网上交易汇智版\xiadan.exe"
+
+    BALANCE_CONTROL_ID_GROUP = {
+        "资金余额": 1012,
+        "可用金额": 1016,
+        "可取金额": 1017,
+        "总资产": 1015,
+        "股票市值": 1014,
+        "持仓盈亏": 1027
+    }
+
+    POSITION_COMPARE_ITEMS = ["股票余额", "可用余额", "成本价"]

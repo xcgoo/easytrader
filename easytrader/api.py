@@ -68,6 +68,11 @@ def use(broker, debug=False, **kwargs):
 
         return ZXClientTrader()
 
+    if broker.lower() in ["cj_client", "长江客户端"]:
+        from easytrader.cj_clienttrader import CJClientTrader
+
+        return CJClientTrader()
+
     if broker.lower() in ["ths", "同花顺客户端"]:
         from .clienttrader import ClientTrader
 
