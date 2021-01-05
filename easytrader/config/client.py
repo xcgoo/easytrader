@@ -82,8 +82,9 @@ class CommonConfig:
     AUTO_IPO_MENU_PATH = ["新股申购", "批量新股申购"]
     AUTO_IPO_NUMBER = '申购数量'
 
-    POSITION_COMPARE_ITEMS = ["股票余额", "可用余额", "冻结数量", "成本价"]
-
+    POSITION_RECORD_COMPARE_ITEMS = ["股票余额", "可用余额", "冻结数量", "成本价"]
+    TRADE_RECORD_INDEX_NAME = "成交编号"
+    ENTRUST_RECORD_INDEX_NAME = "委托编号"
 
 class YH(CommonConfig):
     DEFAULT_EXE_PATH = r"C:\双子星-中国银河证券\Binarystar.exe"
@@ -133,7 +134,7 @@ class HT(CommonConfig):
     AUTO_IPO_MENU_PATH = ["新股申购", "批量新股申购"]
     AUTO_IPO_NUMBER = '可申购数量'
 
-
+    ENTRUST_RECORD_INDEX_NAME = "合同编号"
 
 class GJ(CommonConfig):
     DEFAULT_EXE_PATH = "C:\\全能行证券交易终端\\xiadan.exe"
@@ -212,7 +213,7 @@ class ZX(CommonConfig):
 
     TITLE = "中信证券"
     BALANCE_MENU_PATH = ["查询[F4]", "资金股份"]
-    POSITION_COMPARE_ITEMS = ["参考持股", "可用股份", "成本价", "冻结数量"]
+    POSITION_RECORD_COMPARE_ITEMS = ["参考持股", "可用股份", "成本价", "冻结数量"]
 
 class CJ(CommonConfig):
     DEFAULT_EXE_PATH = r"C:\Programs\金长江网上交易汇智版\xiadan.exe"
@@ -226,4 +227,4 @@ class CJ(CommonConfig):
         "持仓盈亏": 1027
     }
 
-    POSITION_COMPARE_ITEMS = ["股票余额", "可用余额", "成本价"]
+    POSITION_RECORD_COMPARE_ITEMS = ["股票余额", "可用余额", "成本价"]

@@ -75,5 +75,6 @@ class CJClientTrader(clienttrader.BaseLoginClientTrader):
                     break
                 except:
                     time.sleep(0.5)
+
             # 关闭弹出窗口
             self.close_pop_dialog()

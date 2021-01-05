@@ -347,7 +347,7 @@ class ClientTrader(IClientTrader):
             bt_select_all = self._main.child_window(class_name="Button",
                                                     control_id=self._config.AUTO_IPO_SELECT_ALL_BUTTON_CONTROL_ID,
                                                     title="全部选中")
-            bt_select_all.exists()
+            bt_select_all.click()
         except:
             pass
         self.wait(0.1)
@@ -640,7 +640,7 @@ class BaseLoginClientTrader(ClientTrader):
             df_position_td_ori.set_index("证券代码", inplace=True)
             df_position_td_ori[u"记录日期"] = date.today()
             df_position_td = df_position_td_ori.copy()
-            df_position_td = df_position_td[self._config.POSITION_COMPARE_ITEMS]
+            df_position_td = df_position_td[self._config.POSITION_RECORD_COMPARE_ITEMS]
             dict_position_td = df_position_td.to_dict(orient="index")
         else:
             df_position_td = pd.DataFrame([])
@@ -651,7 +651,7 @@ class BaseLoginClientTrader(ClientTrader):
                 dtm_last_record = max(df_position_his["记录日期"])
                 df_position_his = df_position_his[df_position_his['记录日期'] == dtm_last_record]
                 df_position_his.set_index("证券代码", inplace=True)
-                df_position_his = df_position_his[self._config.POSITION_COMPARE_ITEMS]
+                df_position_his = df_position_his[self._config.POSITION_RECORD_COMPARE_ITEMS]
                 dict_position_his = df_position_his.to_dict(orient="index")
                 if dict_position_td != dict_position_his:
                     df_position_td_ori.to_csv(position_record_path, header=False, mode="a", index=True, float_format="%.3f")
@@ -665,32 +665,43 @@ class BaseLoginClientTrader(ClientTrader):
         time.sleep(0.5)
         trades_list = self.today_trades
         if len(trades_list) > 0:
-            df_trade_td_ori = pd.DataFrame.from_dict(trades_list, orient='columns')
-            df_trade_td_ori.set_index("证券代码", inplace=True)
-            df_trade_td_ori[u"记录日期"] = date.today()
-            df_trade_td = df_trade_td_ori.copy()
-            df_trade_td = df_trade_td[["成交数量", "成交编号", "合同编号"]]
-            dict_trade_td = df_trade_td.to_dict(orient="index")
+            df_trade_td = pd.DataFrame.from_dict(trades_list, orient='columns')
+            df_trade_td.set_index(self._config.TRADE_RECORD_INDEX_NAME, inplace=True)
+            df_trade_td[u"记录日期"] = date.today()
         else:
             df_trade_td = pd.DataFrame([])
-            dict_trade_td = {}
-
         if trade_record_path.exists():
-            df_trade_his = pd.read_csv(trade_record_path, dtype={"证券代码": str}, parse_dates=["记录日期"])
+            df_trade_his = pd.read_csv(trade_record_path, dtype={"证券代码": str}, parse_dates=["记录日期"], index_col=self._config.TRADE_RECORD_INDEX_NAME)
             if df_trade_td.shape[0] > 0:
-                dtm_last_record = max(df_trade_his["记录日期"])
-                df_trade_his = df_trade_his[df_trade_his['记录日期'] == dtm_last_record]
-                df_trade_his.set_index("证券代码", inplace=True)
-                df_trade_his = df_trade_his[["成交数量", "成交编号", "合同编号"]]
-                dict_trade_his = df_trade_his.to_dict(orient="index")
-                if dict_trade_td != dict_trade_his:
-                    df_trade_td_ori.to_csv(trade_record_path, header=False, mode="a", index=True, float_format="%.3f")
+                for ind in df_trade_td.index:
+                    df_trade_his.loc[ind, :] = df_trade_td.loc[ind, :]
+                    df_trade_his.to_csv(trade_record_path, header=False, mode="a", index=True, float_format="%.3f")
                     logger.info("append the trades to the trades record file.")
         else:
             if df_trade_td.shape[0] > 0:
-                df_trade_td["记录日期"] = date.today()
-                df_trade_td_ori.to_csv(trade_record_path, header=True, index=True, float_format="%.3f")
+                df_trade_td.to_csv(trade_record_path, header=True, index=True, float_format="%.3f")
                 logger.info("newly record the trades to the trades record file.")
+
+    def record_entrusts(self, entrust_record_path):
+        time.sleep(0.5)
+        entrusts_list = self.today_entrusts
+        if len(entrusts_list) > 0:
+            df_entrusts_td = pd.DataFrame.from_dict(entrusts_list, orient='columns')
+            df_entrusts_td.set_index(self._config.ENTRUST_RECORD_INDEX_NAME, inplace=True)
+            df_entrusts_td[u"记录日期"] = date.today()
+        else:
+            df_entrusts_td = pd.DataFrame([])
+        if entrust_record_path.exists():
+            df_entrusts_his = pd.read_csv(entrust_record_path, dtype={"证券代码": str}, parse_dates=["记录日期"], index_col=self._config.ENTRUST_RECORD_INDEX_NAME)
+            if df_entrusts_td.shape[0] > 0:
+                for ind in df_entrusts_td.index:
+                    df_entrusts_his.loc[ind, :] = df_entrusts_td.loc[ind, :]
+                    df_entrusts_his.to_csv(entrust_record_path, header=True, index=True, float_format="%.3f")
+                    logger.info("append the entrusts to the entrusts record file.")
+        else:
+            if df_entrusts_td.shape[0] > 0:
+                df_entrusts_td.to_csv(entrust_record_path, header=True, index=True, float_format="%.3f")
+                logger.info("newly record the entrusts to the entrustss record file.")
 
     def record_balance(self, balance_record_path):
         time.sleep(0.5)
