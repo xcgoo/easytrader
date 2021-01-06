@@ -57,17 +57,17 @@ class HTClientTrader(clienttrader.BaseLoginClientTrader):
                     break
                 time.sleep(0.5)
 
-            while True:
-                try:
-                    self._main = self._app.window(title_re=self._config.TITLE)
-                    print(self._main)
-                    self._main.wait("ready", timeout=100)
-                    break
-                except:
-                    time.sleep(0.5)
+        while True:
+            try:
+                self._main = self._app.window(title_re=self._config.TITLE)
+                print(self._main)
+                self._main.wait("ready", timeout=100)
+                break
+            except:
+                time.sleep(0.5)
 
-            # 关闭弹出窗口
-            self.close_pop_dialog()
+        # 关闭弹出窗口
+        self.close_pop_dialog()
 
     @property
     def balance(self):
