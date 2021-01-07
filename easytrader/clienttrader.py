@@ -666,46 +666,44 @@ class BaseLoginClientTrader(ClientTrader):
         trades_list = self.today_trades
         index_name = self._config.TRADE_RECORD_INDEX_NAME
         if len(trades_list) > 0:
-            df_trade_td = pd.DataFrame.from_dict(trades_list, orient='columns')
-            df_trade_td.set_index(index_name, inplace=True)
-            df_trade_td[u"记录日期"] = date.today()
+            df_td = pd.DataFrame.from_dict(trades_list, orient='columns')
+            df_td["日期"] = date.today()
+            df_td.set_index(["日期", index_name], drop=True, inplace=True)
         else:
-            df_trade_td = pd.DataFrame([])
-        if trade_record_path.exists():
-            df_trade_his = pd.read_csv(trade_record_path, dtype={index_name: str, "证券代码": str}, parse_dates=["记录日期"])
-            df_trade_his.set_index(index_name, inplace=True)
-            if df_trade_td.shape[0] > 0:
-                for ind in df_trade_td.index:
-                    df_trade_his.loc[ind, :] = df_trade_td.loc[ind, :]
-                    df_trade_his.to_csv(trade_record_path, header=True, index=True, float_format="%.3f")
-                    logger.info("append the trades to the trades record file.")
-        else:
-            if df_trade_td.shape[0] > 0:
-                df_trade_td.to_csv(trade_record_path, header=True, index=True, float_format="%.3f")
-                logger.info("newly record the trades to the trades record file.")
+            df_td = pd.DataFrame([])
+
+        if df_td.shape[0] > 0:
+            if trade_record_path.exists():
+                df_his = pd.read_csv(trade_record_path, dtype={index_name: str, "证券代码": str}, parse_dates=["日期"])
+                df_his.set_index(["日期", index_name], drop=True, inplace=True)
+                for ind in df_td.index:
+                    df_his.loc[ind, :] = df_td.loc[ind, :]
+            else:
+                df_his = df_td
+            df_his.to_csv(trade_record_path, header=True, index=True, float_format="%.3f")
+            logger.info("append the trades to the trades record file.")
 
     def record_entrusts(self, entrust_record_path):
         time.sleep(0.5)
         entrusts_list = self.today_entrusts
         index_name = self._config.ENTRUST_RECORD_INDEX_NAME
         if len(entrusts_list) > 0:
-            df_entrusts_td = pd.DataFrame.from_dict(entrusts_list, orient='columns')
-            df_entrusts_td.set_index(index_name, inplace=True)
-            df_entrusts_td[u"记录日期"] = date.today()
+            df_td = pd.DataFrame.from_dict(entrusts_list, orient='columns')
+            df_td["日期"] = date.today()
+            df_td.set_index(["日期", index_name], drop=True, inplace=True)
         else:
-            df_entrusts_td = pd.DataFrame([])
-        if entrust_record_path.exists():
-            df_entrusts_his = pd.read_csv(entrust_record_path, dtype={index_name: str, "证券代码": str}, parse_dates=["记录日期"])
-            df_entrusts_his.set_index(index_name, inplace=True)
-            if df_entrusts_td.shape[0] > 0:
-                for ind in df_entrusts_td.index:
-                    df_entrusts_his.loc[ind, :] = df_entrusts_td.loc[ind, :]
-                    df_entrusts_his.to_csv(entrust_record_path, header=True, index=True, float_format="%.3f")
-                    logger.info("append the entrusts to the entrusts record file.")
-        else:
-            if df_entrusts_td.shape[0] > 0:
-                df_entrusts_td.to_csv(entrust_record_path, header=True, index=True, float_format="%.3f")
-                logger.info("newly record the entrusts to the entrustss record file.")
+            df_td = pd.DataFrame([])
+
+        if df_td.shape[0] > 0:
+            if entrust_record_path.exists():
+                df_his = pd.read_csv(entrust_record_path, dtype={index_name: str, "证券代码": str}, parse_dates=["日期"])
+                df_his.set_index(["日期", index_name], drop=True, inplace=True)
+                for ind in df_td.index:
+                    df_his.loc[ind, :] = df_td.loc[ind, :]
+            else:
+                df_his = df_td
+            df_his.to_csv(entrust_record_path, header=True, index=True, float_format="%.3f")
+            logger.info("append today entrusts to the entrusts record file.")
 
     def record_balance(self, balance_record_path):
         time.sleep(0.5)
