@@ -70,6 +70,7 @@ class CommonConfig:
         "资金帐号": str,
         "资金帐户": str,
         "发生日期": str,
+        "成交编号": str,
     }
 
     CANCEL_ENTRUST_ENTRUST_FIELD = "合同编号"
