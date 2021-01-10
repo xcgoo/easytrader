@@ -78,28 +78,12 @@ class ZXClientTrader(clienttrader.BaseLoginClientTrader):
         # 关闭弹出窗口
         self.close_pop_dialog()
 
-    # def auto_ipo(self):
-    #     self.close_pop_dialog()
-    #     logger.info(f"begin to subscribe the IPO stocks.")
-    #     time.sleep(0.2)
-    #     self._switch_left_menus(self._config.AUTO_IPO_MENU_PATH)
-    #     time.sleep(0.5)
-    #     control_select_all = self._main.child_window(title_re=u"全部选中", class_name="Button")  # 全部选中按钮
-    #     control_sg = self._main.child_window(title_re=u"申购", class_name="Button")  # 申购按钮
-    #     dict_new_stk = self._get_grid_data(self._config.COMMON_GRID_CONTROL_ID)
-    #     ipo_count = len(dict_new_stk)
-    #     if ipo_count > 0:
-    #         time.sleep(0.3)
-    #         control_select_all.click()
-    #         control_sg.click()
-    #         # 确认窗口
-    #         time.sleep(0.2)
-    #         wt_confirm_hwnd = self._main.popup_window()
-    #         wt_confirm = self._main.child_window(handle=wt_confirm_hwnd)
-    #         okbt = wt_confirm.child_window(class_name="Button", control_id=6)
-    #         time.sleep(0.5)
-    #         okbt.click_input()
-    #         logger.info(f"subscribed the IPO stocks.")
-    #         self.close_pop_dialog()
-    #     else:
-    #         logger.info(f"No IPO today.")
+    @property
+    def position(self):
+        self._switch_left_menus(["查询[F4]", "资金股票"])
+        tmp_list = self._get_grid_data(self._config.COMMON_GRID_CONTROL_ID)
+        for posi in tmp_list:
+            posi["证券代码"] = posi["证券代码"][2:8]
+            posi["股东代码"] = posi["股东代码"][2:12]
+        return tmp_list
+

@@ -636,30 +636,31 @@ class BaseLoginClientTrader(ClientTrader):
         time.sleep(0.5)
         posi_list = self.position
         if len(posi_list) > 0:
-            df_position_td_ori = pd.DataFrame.from_dict(posi_list, orient='columns')
-            df_position_td_ori.set_index("证券代码", inplace=True)
-            df_position_td_ori[u"记录日期"] = date.today()
-            df_position_td = df_position_td_ori.copy()
-            df_position_td = df_position_td[self._config.POSITION_RECORD_COMPARE_ITEMS]
-            dict_position_td = df_position_td.to_dict(orient="index")
+            df_td = pd.DataFrame.from_dict(posi_list)
+            df_td["日期"] = date.today()
+            df_td_copy = df_td.copy().set_index("证券代码")
+            dict_td = df_td_copy[self._config.POSITION_RECORD_COMPARE_ITEMS].to_dict(orient="index")
         else:
-            df_position_td = pd.DataFrame([])
-            dict_position_td = {}
-        if position_record_path.exists():
-            df_position_his = pd.read_csv(position_record_path, dtype={"证券代码": str}, parse_dates=["记录日期"])
-            if df_position_td.shape[0] > 0:
-                dtm_last_record = max(df_position_his["记录日期"])
-                df_position_his = df_position_his[df_position_his['记录日期'] == dtm_last_record]
-                df_position_his.set_index("证券代码", inplace=True)
-                df_position_his = df_position_his[self._config.POSITION_RECORD_COMPARE_ITEMS]
-                dict_position_his = df_position_his.to_dict(orient="index")
-                if dict_position_td != dict_position_his:
-                    df_position_td_ori.to_csv(position_record_path, header=False, mode="a", index=True, float_format="%.3f")
-                    logger.info("append the positions to the position record file.")
-        else:
-            if df_position_td.shape[0] > 0:
-                df_position_td_ori.to_csv(position_record_path, header=True, index=True, float_format="%.3f")
-                logger.info("newly redorded the position to the position record file.")
+            df_td = pd.DataFrame([])
+            dict_td = {}
+
+        if df_td.shape[0] > 0:
+            if position_record_path.exists():
+                df_his = pd.read_csv(position_record_path, dtype={"证券代码": str}, parse_dates=["日期"])
+                max_dt = max(df_his["日期"])
+                df_his_last = df_his[df_his["日期"] == max_dt]
+                df_his_last.set_index("证券代码", inplace=True)
+                dict_his = df_his_last[self._config.POSITION_RECORD_COMPARE_ITEMS].to_dict(orient="index")
+                df_his.set_index(["日期", "证券代码"], drop=True, inplace=True)
+                if dict_his != dict_td:
+                    for ind in df_td.index:
+                        df_his.loc[ind, :] = df_td.loc[ind, :]
+            else:
+                df_his = df_td
+                df_his.set_index(["日期", "证券代码"], drop=True, inplace=True)
+
+            df_his.to_csv(position_record_path, header=True, index=True, float_format="%.3f")
+            logger.info("append the positions to the position record file.")
 
     def record_trades(self, trade_record_path):
         time.sleep(0.5)

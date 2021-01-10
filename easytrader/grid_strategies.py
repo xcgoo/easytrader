@@ -11,7 +11,7 @@ import pywinauto
 import pywinauto.clipboard
 
 from easytrader.log import logger
-from easytrader.utils.captcha import captcha_recognize
+from easytrader.utils.captcha import captcha_recognize, aip_recognize
 from easytrader.utils.win_gui import SetForegroundWindow, ShowWindow, win32defines
 
 if TYPE_CHECKING:
@@ -99,7 +99,7 @@ class Copy(BaseStrategy):
             if (
                     self._trader.app.top_window().window(class_name="Static", title_re="验证码").exists(timeout=1)
             ):
-                file_path = "tmp.png"
+                file_path = tempfile.mktemp() + ".png"
                 count = 5
                 found = False
                 while count > 0:
@@ -109,7 +109,7 @@ class Copy(BaseStrategy):
                         file_path
                     )  # 保存验证码
 
-                    captcha_num = captcha_recognize(file_path)  # 识别验证码
+                    captcha_num = aip_recognize((file_path))
                     logger.info("captcha result-->" + captcha_num)
                     if len(captcha_num) == 4:
                         self._trader.app.top_window().window(
@@ -119,15 +119,13 @@ class Copy(BaseStrategy):
                         )  # 模拟输入验证码
 
                         self._trader.app.top_window().set_focus()
-                        pywinauto.keyboard.SendKeys("{ENTER}")  # 模拟发送enter，点击确定
+                        pywinauto.keyboard.send_keys("{ENTER}")  # 模拟发送enter，点击确定
                         try:
-                            logger.info(
-                                self._trader.app.top_window()
-                                    .window(control_id=0x966, class_name="Static")
-                                    .window_text()
-                            )
+                            info_static = self._trader.app.top_window().child_window(control_id=0x966, class_name="Static")
+                            info_static.wait("ready", timeout=1)
+                            logger.info(info_static.window_text())
                         except Exception as ex:  # 窗体消失
-                            logger.exception(ex)
+                            # logger.exception(ex)
                             found = True
                             break
                     count -= 1

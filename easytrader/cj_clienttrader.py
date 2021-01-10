@@ -78,3 +78,12 @@ class CJClientTrader(clienttrader.BaseLoginClientTrader):
 
         # 关闭弹出窗口
         self.close_pop_dialog()
+
+    @property
+    def position(self):
+        self._switch_left_menus(["查询[F4]", "资金股票"])
+        tmp_list = self._get_grid_data(self._config.COMMON_GRID_CONTROL_ID)
+        for posi in tmp_list:
+            posi["证券代码"] = posi["证券代码"][2:8]
+            posi["股东帐户"] = posi["股东帐户"][2:12]
+        return tmp_list
