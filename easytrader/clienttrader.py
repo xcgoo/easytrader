@@ -637,9 +637,10 @@ class BaseLoginClientTrader(ClientTrader):
         posi_list = self.position
         if len(posi_list) > 0:
             df_td = pd.DataFrame.from_dict(posi_list)
-            df_td["日期"] = date.today()
+            df_td["日期"] = pd.to_datetime(date.today())
             df_td_copy = df_td.copy().set_index("证券代码")
             dict_td = df_td_copy[self._config.POSITION_RECORD_COMPARE_ITEMS].to_dict(orient="index")
+            df_td.set_index(["日期", "证券代码"], drop=True, inplace=True)
         else:
             df_td = pd.DataFrame([])
             dict_td = {}
@@ -668,7 +669,7 @@ class BaseLoginClientTrader(ClientTrader):
         index_name = self._config.TRADE_RECORD_INDEX_NAME
         if len(trades_list) > 0:
             df_td = pd.DataFrame.from_dict(trades_list, orient='columns')
-            df_td["日期"] = date.today()
+            df_td["日期"] = pd.to_datetime(date.today())
             df_td.set_index(["日期", index_name], drop=True, inplace=True)
         else:
             df_td = pd.DataFrame([])
@@ -690,7 +691,7 @@ class BaseLoginClientTrader(ClientTrader):
         index_name = self._config.ENTRUST_RECORD_INDEX_NAME
         if len(entrusts_list) > 0:
             df_td = pd.DataFrame.from_dict(entrusts_list, orient='columns')
-            df_td["日期"] = date.today()
+            df_td["日期"] = pd.to_datetime(date.today())
             df_td.set_index(["日期", index_name], drop=True, inplace=True)
         else:
             df_td = pd.DataFrame([])
@@ -711,7 +712,7 @@ class BaseLoginClientTrader(ClientTrader):
         dict_balance_td = self.balance
         ser_balance_td = pd.Series(dict_balance_td)
         ser_balance_td[u"记录时间"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        index_td = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        index_td = pd.to_datetime(date.today())
         if balance_record_path.exists():
             df_balance_his = pd.read_csv(balance_record_path, dtype={"证券代码": str}, parse_dates=["日期", "记录时间"],
                                          index_col=[0])
