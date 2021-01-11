@@ -658,7 +658,6 @@ class BaseLoginClientTrader(ClientTrader):
                         df_his.loc[ind, :] = df_td.loc[ind, :]
             else:
                 df_his = df_td
-                df_his.set_index(["日期", "证券代码"], drop=True, inplace=True)
 
             df_his.to_csv(position_record_path, header=True, index=True, float_format="%.3f")
             logger.info("append the positions to the position record file.")
