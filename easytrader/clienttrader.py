@@ -708,20 +708,20 @@ class BaseLoginClientTrader(ClientTrader):
 
     def record_balance(self, balance_record_path):
         time.sleep(0.5)
-        dict_balance_td = self.balance
-        ser_balance_td = pd.Series(dict_balance_td)
-        ser_balance_td[u"记录时间"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        dict_td = self.balance
+        df_td = pd.DataFrame.from_dict(dict_td, orient="index").T
         index_td = pd.to_datetime(date.today())
+        df_td.index = [index_td]
+        df_td.loc[index_td, "记录时间"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
         if balance_record_path.exists():
-            df_balance_his = pd.read_csv(balance_record_path, dtype={"证券代码": str}, parse_dates=["日期", "记录时间"],
-                                         index_col=[0])
-            df_balance_his.drop_duplicates(subset=["总资产"], keep="last", ignore_index=False, inplace=True)
-            df_balance_his.loc[index_td, :] = ser_balance_td
+            df_his = pd.read_csv(balance_record_path, dtype={"证券代码": str}, parse_dates=["日期", "记录时间"])
+            df_his.set_index("日期", inplace=True)
+            df_his.loc[index_td, :] = df_td.loc[index_td, :]
         else:
-            ser_balance_td["日期"] = index_td
-            df_balance_his = ser_balance_td.to_frame().T
-            df_balance_his.set_index("日期", inplace=True)
-        df_balance_his.to_csv(balance_record_path)
+            df_his = df_td
+
+        df_his.to_csv(balance_record_path, header=True, index=True, float_format="%.2f")
         logger.info("updated today's balance to the balance record file.")
 
     def logout(self):
