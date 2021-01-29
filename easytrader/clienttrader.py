@@ -656,11 +656,12 @@ class BaseLoginClientTrader(ClientTrader):
                 if dict_his != dict_td:
                     for ind in df_td.index:
                         df_his.loc[ind, :] = df_td.loc[ind, :]
+                    df_his.to_csv(position_record_path, header=True, index=True, float_format="%.3f")
+                    logger.info("append the positions to the position record file.")
             else:
                 df_his = df_td
-
-            df_his.to_csv(position_record_path, header=True, index=True, float_format="%.3f")
-            logger.info("append the positions to the position record file.")
+                df_his.to_csv(position_record_path, header=True, index=True, float_format="%.3f")
+                logger.info("append the positions to the position record file.")
 
     def record_trades(self, trade_record_path):
         time.sleep(0.5)
@@ -679,10 +680,12 @@ class BaseLoginClientTrader(ClientTrader):
                 df_his.set_index(["日期", index_name], drop=True, inplace=True)
                 for ind in df_td.index:
                     df_his.loc[ind, :] = df_td.loc[ind, :]
+                df_his.to_csv(trade_record_path, header=True, index=True, float_format="%.3f")
+                logger.info("append the trades to the trades record file.")
             else:
                 df_his = df_td
-            df_his.to_csv(trade_record_path, header=True, index=True, float_format="%.3f")
-            logger.info("append the trades to the trades record file.")
+                df_his.to_csv(trade_record_path, header=True, index=True, float_format="%.3f")
+                logger.info("append the trades to the trades record file.")
 
     def record_entrusts(self, entrust_record_path):
         time.sleep(0.5)
@@ -701,10 +704,13 @@ class BaseLoginClientTrader(ClientTrader):
                 df_his.set_index(["日期", index_name], drop=True, inplace=True)
                 for ind in df_td.index:
                     df_his.loc[ind, :] = df_td.loc[ind, :]
+                df_his.to_csv(entrust_record_path, header=True, index=True, float_format="%.3f")
+                logger.info("append today entrusts to the entrusts record file.")
             else:
                 df_his = df_td
-            df_his.to_csv(entrust_record_path, header=True, index=True, float_format="%.3f")
-            logger.info("append today entrusts to the entrusts record file.")
+                df_his.to_csv(entrust_record_path, header=True, index=True, float_format="%.3f")
+                logger.info("append today entrusts to the entrusts record file.")
+
 
     def record_balance(self, balance_record_path):
         time.sleep(0.5)
