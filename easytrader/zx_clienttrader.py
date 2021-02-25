@@ -70,9 +70,22 @@ class ZXClientTrader(clienttrader.BaseLoginClientTrader):
 
         while True:
             try:
-                self._main = self._app.window(title_re=self._config.TITLE)
-                self._main.wait("ready", timeout=100)
-                break
+                self._app.top_window().set_focus()
+                tmp_txt = self._app.top_window().window_text()
+                if tmp_txt is None or self._config.TITLE not in tmp_txt:
+                    dlg = self._app.top_window()
+                    info = dlg.child_window(title_re="请输入您的交易密码", class_name="Static")
+                    if info.exists():
+                        pass_edit = dlg.child_window(control_id=1039, class_name="Edit")
+                        pass_edit.type_keys(password)  # 输入密码
+                        dlg.child_window(class_name="Button", control_id=1).click()
+                    else:
+                        logger.info("最顶层窗口非主窗口，程序终止运行！")
+                        return
+                else:
+                    self._main = self._app.window(title_re=self._config.TITLE)
+                    self._main.wait("ready", timeout=100)
+                    break
             except:
                 time.sleep(0.5)
         # 关闭弹出窗口
