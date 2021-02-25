@@ -59,6 +59,7 @@ class HTClientTrader(clienttrader.BaseLoginClientTrader):
 
         while True:
             try:
+                self._app.active()
                 self._app.top_window().set_focus()
                 tmp_txt = self._app.top_window().window_text()
                 if tmp_txt is None or self._config.TITLE not in tmp_txt:
