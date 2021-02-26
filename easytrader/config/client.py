@@ -87,6 +87,9 @@ class CommonConfig:
     TRADE_RECORD_INDEX_NAME = "成交编号"
     ENTRUST_RECORD_INDEX_NAME = "委托编号"
 
+    LOCK_MAIN_PASSWORD_INPUT_ID = 1039  # 锁屏密码输入控件
+    LOCK_MAIN_ENTER_ID = 1   # 锁屏密码确认控件
+
 class YH(CommonConfig):
     DEFAULT_EXE_PATH = r"C:\双子星-中国银河证券\Binarystar.exe"
 

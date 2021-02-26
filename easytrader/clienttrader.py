@@ -733,3 +733,21 @@ class BaseLoginClientTrader(ClientTrader):
     def logout(self):
         self.exit()
         self._main.wait_not("exists", 60)
+
+    def unlock_main(self, password: str=None):
+        self._app.active()
+        tmp_txt = self._app.top_window().window_text()
+        if tmp_txt is None or self._config.TITLE not in tmp_txt:
+            dlg = self._app.top_window()
+            info = dlg.child_window(title_re="请输入您的交易密码", class_name="Static")
+            while info.exists():
+                try:
+                    pass_edit = dlg.child_window(control_id=self._config.LOCK_MAIN_PASSWORD_INPUT_ID, class_name="Edit")
+                    pass_edit.set_focus()
+                    pass_edit.type_keys(password)  # 输入密码
+                    dlg.child_window(class_name="Button", control_id=self._config.LOCK_MAIN_ENTER_ID).click()
+                    time.sleep(0.5)
+                    print("ok")
+                    break
+                except:
+                    continue

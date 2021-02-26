@@ -57,7 +57,7 @@ class ZXClientTrader(clienttrader.BaseLoginClientTrader):
                     im = dlg_login.child_window(control_id=0x5db).capture_as_image()
                     im.save(file_path)
 
-                    captcha_num = aip_recognize((file_path))
+                    captcha_num = captcha_recognize(file_path)
                     edit_ocr.set_text(captcha_num)  # 输入验证码
                     # 点击确定
                     bt_confirm = dlg_login.child_window(control_id=0x3EE)
@@ -70,17 +70,6 @@ class ZXClientTrader(clienttrader.BaseLoginClientTrader):
 
         while True:
             try:
-                # self._app.active()
-                # self._app.top_window().set_focus()
-                # tmp_txt = self._app.top_window().window_text()
-                # if tmp_txt is None or self._config.TITLE not in tmp_txt:
-                #     dlg = self._app.top_window()
-                #     info = dlg.child_window(title_re="请输入您的交易密码", class_name="Static")
-                #     if info.exists():
-                #         pass_edit = dlg.child_window(control_id=1039, class_name="Edit")
-                #         pass_edit.type_keys(password)  # 输入密码
-                #         dlg.child_window(class_name="Button", control_id=1).click()
-
                 self._main = self._app.window(title_re=self._config.TITLE)
                 self._main.wait("ready", timeout=100)
                 break
